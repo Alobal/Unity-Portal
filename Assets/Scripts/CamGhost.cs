@@ -8,23 +8,35 @@ public class CamGhost : PortalGhost
 {
     public Camera cam;
     PlayerController player_controller = null;
+    Matrix4x4 original_proj;
 
 
 
     /// <summary>
-    /// align camera's near plane to portal 
+    /// align  camera's near plane to the oblique portal plane
     /// </summary>
     public void AdjustCamNearPlane()
     {
-        // Learning resource:
-        // http://www.terathon.com/lengyel/Lengyel-Oblique.pdf
-
+        Transform portal_plane = target_portal.transform;
+        int behind_portal = System.Math.Sign(Vector3.Dot(portal_plane.forward, portal_plane.position - cam.transform.position));
+        Vector3 camspace_portal_pos = cam.worldToCameraMatrix.MultiplyPoint(portal_plane.position);
+        Vector3 camspace_portal_normal = cam.worldToCameraMatrix.MultiplyVector(portal_plane.forward) * behind_portal;
+        float camspace_portal_dst = -Vector3.Dot(camspace_portal_pos, camspace_portal_normal);
+        if (Mathf.Abs(camspace_portal_dst) > 0.2)
+        {
+            Vector4 camspace_portal_plane = new Vector4(camspace_portal_normal.x, camspace_portal_normal.y, camspace_portal_normal.z, camspace_portal_dst);
+            cam.projectionMatrix = cam.CalculateObliqueMatrix(camspace_portal_plane);
+        }
+        else
+            cam.projectionMatrix = original_proj;
+        ;
     }
 
-    public override void Init(PortalDoor source, PortalDoor target,PortalTraveller target_traveller)
+    public override void Init(PortalDoor source, PortalDoor target, PortalTraveller target_traveller)
     {
-        base.Init(source,target,target_traveller);
+        base.Init(source, target, target_traveller);
         cam = GetComponentInChildren<Camera>();
+        original_proj = cam.projectionMatrix;
         player_controller = traveller.GetComponent<PlayerController>();
         SetRenderTexture();
         SyncPlayerCamera();
@@ -44,6 +56,7 @@ public class CamGhost : PortalGhost
     {
         Quaternion player_cam_rot = player_controller.cam_local_rot;
         cam.transform.localRotation = player_cam_rot;
+        //AdjustCamNearPlane();
     }
 
     void SetRenderTexture()

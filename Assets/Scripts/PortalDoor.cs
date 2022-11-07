@@ -15,7 +15,7 @@ class TravellerData
     public PortalGhost ghost;
     public float last_dst;
 
-    public TravellerData(PortalTraveller t,PortalGhost g,float d=0)
+    public TravellerData(PortalTraveller t, PortalGhost g, float d = 0)
     {
         traveller = t;
         ghost = g;
@@ -35,7 +35,7 @@ public class PortalDoor : MonoBehaviour
     public RenderTexture rt;
     public CamGhost cam_ghost;
     public PortalDoor target_portal;
-    Dictionary<PortalTraveller, TravellerData> travel_data=new ();
+    Dictionary<PortalTraveller, TravellerData> travel_data = new();
     int render_recursion_time = 10;
     public float thickness { get { return transform.localScale.z; } }
     Camera main_cam;
@@ -47,8 +47,8 @@ public class PortalDoor : MonoBehaviour
     // Start is called before the first frame update
     void Awake()
     {
-        main_cam=Camera.main;
-        player=GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
+        main_cam = Camera.main;
+        player = GameObject.FindGameObjectWithTag("Player").GetComponent<PlayerController>();
         InitRenderTexture();
         InitDoorThickness();
         recursion_old_door = new GameObject("recursion_old_door");
@@ -102,6 +102,7 @@ public class PortalDoor : MonoBehaviour
         {
             cam_ghost.transform.position = cam_recursion_pos[i];
             cam_ghost.transform.rotation = cam_recursion_rot[i];
+            cam_ghost.AdjustCamNearPlane();
             cam.Render();
         }
     }
@@ -112,12 +113,12 @@ public class PortalDoor : MonoBehaviour
     {
         AdjustPortalView();
         int lenth = travel_data.Count;
-        for (int i = lenth-1; i>=0 ;i--)
+        for (int i = lenth - 1; i >= 0; i--)
         {
             PortalTraveller traveller = travel_data.Keys.ElementAt(i);
             float dst = Vector3.Dot((traveller.transform.position - transform.position), transform.forward);
             float last_dst = travel_data[traveller].last_dst;
-            if(dst*last_dst < 0) //teleport 
+            if (dst * last_dst < 0) //teleport 
             {
                 Teleport(traveller, travel_data[traveller].ghost);
             }
@@ -126,7 +127,7 @@ public class PortalDoor : MonoBehaviour
         }
     }
 
-    void Teleport(PortalTraveller traveller,PortalGhost ghost)
+    void Teleport(PortalTraveller traveller, PortalGhost ghost)
     {
         traveller.Teleport(ghost);
         ClearTraveller(traveller);
@@ -139,11 +140,12 @@ public class PortalDoor : MonoBehaviour
         if (!travel_data.ContainsKey(traveller))
         {
             TravellerData data = new(traveller, GenerateGhost(traveller));
-            travel_data[traveller]=data;
+            travel_data[traveller] = data;
         }
         traveller.PreTeleport(this);
         travel_data[traveller].ghost.SetClipMaterial();
     }
+
 
     void AdjustPortalView()
     {
@@ -158,7 +160,7 @@ public class PortalDoor : MonoBehaviour
     public void AdjustPortalView(bool to_back)
     {
         int dir = to_back ? 1 : -1;
-        portal_view.transform.position = transform.position - 0.5f*thickness* transform.forward * dir;
+        portal_view.transform.position = transform.position - 0.5f * thickness * transform.forward * dir;
     }
 
     void ClearTraveller(PortalTraveller traveller)
@@ -184,14 +186,14 @@ public class PortalDoor : MonoBehaviour
     /// <param name="target_portal"></param>
     public void GenerateCamGhost(PortalTraveller traveller)
     {
-        cam_ghost = Instantiate(ghost_prefab,gameObject.transform).GetComponent<CamGhost>();
+        cam_ghost = Instantiate(ghost_prefab, gameObject.transform).GetComponent<CamGhost>();
         cam_ghost.Init(this, target_portal, traveller);
     }
 
     public PortalGhost GenerateGhost(PortalTraveller traveller)
     {
         GameObject ghost_go = new GameObject($"{traveller.name}_ghost");
-        PortalGhost ghost=ghost_go.AddComponent<PortalGhost>();
+        PortalGhost ghost = ghost_go.AddComponent<PortalGhost>();
         ghost.Init(this, target_portal, traveller);
         return ghost;
     }
@@ -199,7 +201,7 @@ public class PortalDoor : MonoBehaviour
 
     public void Init(PortalDoor target_portal, PlayerController main_player)
     {
-        if (this.target_portal==null)
+        if (this.target_portal == null)
             this.target_portal = target_portal;
         GenerateCamGhost(main_player);
     }
@@ -213,7 +215,7 @@ public class PortalDoor : MonoBehaviour
         float half_height = main_cam.nearClipPlane * Mathf.Tan(main_cam.fieldOfView * 0.5f * Mathf.Deg2Rad);
         float half_width = half_height * main_cam.aspect;
         float dst_to_nearcorner = new Vector3(half_width, half_height, main_cam.nearClipPlane).magnitude;
-        float thickness = dst_to_nearcorner*1.1f;
+        float thickness = dst_to_nearcorner * 1.1f;
         transform.localScale = new Vector3(transform.localScale.x, transform.localScale.y, thickness);
         return;
     }
@@ -229,7 +231,7 @@ public class PortalDoor : MonoBehaviour
             rt.height = height;
         }
         else
-            rt = new RenderTexture(width,height,0);
+            rt = new RenderTexture(width, height, 0);
         rt.Create();
         portal_view.GetComponent<Renderer>().material.mainTexture = rt;
     }
