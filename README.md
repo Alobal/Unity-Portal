@@ -15,4 +15,5 @@ Features:
 - Clip the part passed of traveller , when through Portals.
 - Physics Travelling, which maintains the velocity.
 - Recursion Portal view
+- Audo adjust camera near plane , aligned to portal doors, which prevents the obstacles from blocking camera.
 
