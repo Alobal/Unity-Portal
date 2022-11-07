@@ -29,7 +29,6 @@ public class CamGhost : PortalGhost
         }
         else
             cam.projectionMatrix = original_proj;
-        ;
     }
 
     public override void Init(PortalDoor source, PortalDoor target, PortalTraveller target_traveller)
